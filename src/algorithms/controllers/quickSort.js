@@ -249,7 +249,8 @@ export default {
           },
           [p, right + 1],
         );
-        QuickSort(a, left, p - 1, `${left}/${p - 1}`, depth + 1);
+        // need a flag to detect when bookmark 3 is expanded. If not expanded, use quicksort2
+        QuickSort2(a, left, p - 1, `${left}/${p - 1}`, depth + 1);
 
         chunker.add(
           4,
@@ -292,7 +293,8 @@ export default {
           },
           [p, right + 1],
         );
-        QuickSort(a, p + 1, right, `${right}/${p + 1}`, depth + 1);
+        // need a flag to detect when bookmark 4 is expanded. If not expanded, use quicksort2
+        QuickSort2(a, p + 1, right, `${right}/${p + 1}`, depth + 1);
       }
       // array of size 1, already sorted
       else if (left < array.length) {
@@ -306,6 +308,29 @@ export default {
       }
       return a; // Facilitates testing
     }
+
+
+    function QuickSort2(array, left, right, _, depth) {
+      let a = array;
+      let p;
+      if (left < right) {
+        [p, a] = partition(a, left, right);
+        QuickSort2(a, left, p - 1, `${left}/${p - 1}`, depth + 1);
+        QuickSort2(a, p + 1, right, `${right}/${p + 1}`, depth + 1);
+      }
+      // array of size 1, already sorted
+      else if (left < array.length) {
+        chunker.add(
+          3,
+          (vis, l) => {
+            vis.array.sorted(l);
+          },
+          [left],
+        );
+      }
+      return a; // Facilitates testing
+    }
+    
 
     chunker.add(
       1,
