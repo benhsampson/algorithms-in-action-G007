@@ -11,17 +11,17 @@ const QS_NAME = 'quickSort';
 
 let algorithmGetter = () => null;
 
-function getGlobalAlgotithm() {
+function getGlobalAlgorithm() {
   return algorithmGetter();
 }
 
-window.getGlobalAlgotithm = getGlobalAlgotithm;
-export function initGlobalAlgotithmGetterQS(getter) {
+window.getGlobalAlgorithm = getGlobalAlgorithm;
+export function initGlobalAlgorithmGetterQS(getter) {
   algorithmGetter = getter;
 }
 
 export function isIJVarCollapsed() {
-  const algorithm = getGlobalAlgotithm();
+  const algorithm = getGlobalAlgorithm();
   if (algorithm.id.name !== QS_NAME) return false;
   // , playing, chunker
   const { bookmark, pseudocode, collapse } = algorithm;

@@ -311,23 +311,29 @@ export default {
 
       let a = qs_num_array;
       let pivot;
-
-      
-      chunker.add(QS_BOOKMARKS.if_left_less_right, refresh_stack, [real_stack, finished_stack_frames]);
-
+      if (depth > 0 && isIJVarCollapsed()) {
+        chunker.add(QS_BOOKMARKS.if_left_less_right, refresh_stack, [real_stack, finished_stack_frames]);
+      }
       if (left < right) {
         [pivot, a] = partition(a, left, right);
-
-        chunker.add(QS_BOOKMARKS.quicksort_left_to_i_minus_1, refresh_stack, [real_stack, finished_stack_frames]);
+        if (depth > 0 && isIJVarCollapsed()) {
+          chunker.add(QS_BOOKMARKS.quicksort_left_to_i_minus_1, refresh_stack, [real_stack, finished_stack_frames]);
+        } else {
+          chunker.add(QS_BOOKMARKS.quicksort_left_to_i_minus_1, () => {}, []);
+        }
         QuickSort(a, left, pivot - 1, `${left}/${pivot - 1}`, depth + 1);
-
-        chunker.add(QS_BOOKMARKS.quicksort_i_plus_1_to_right, refresh_stack, [real_stack, finished_stack_frames]);
+        if (depth > 0 && isIJVarCollapsed()) {
+          chunker.add(QS_BOOKMARKS.quicksort_i_plus_1_to_right, refresh_stack, [real_stack, finished_stack_frames]);
+        } else {
+          chunker.add(QS_BOOKMARKS.quicksort_i_plus_1_to_right, () => {}, []);
+        }
         QuickSort(a, pivot + 1, right, `${right}/${pivot + 1}`, depth + 1);
       }
       // array of size 1, already sorted
       else if (left < a.length) {
+        let dependent_bookmark = (isIJVarCollapsed()) ? QS_BOOKMARKS.if_left_less_right: 19;
         chunker.add(
-          QS_BOOKMARKS.if_left_less_right,
+          dependent_bookmark,
           (vis, l) => {
             vis.array.sorted(l);
           },
