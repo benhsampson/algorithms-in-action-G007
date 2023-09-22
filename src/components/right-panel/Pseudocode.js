@@ -12,13 +12,25 @@ function Pseudocode({ fontSize, fontSizeIncrement }) {
   const show = !!algorithm.hasOwnProperty('pseudocode');
   var explanation = "";
 
+  function reset() {
+
+    // how to get name and mode
+    dispatch(GlobalActions.LOAD_ALGORITHM, { name: 'quickSort', mode: 'idk lol' });
+  }
+
   const onExpand = () => {
+
+    reset()
+
     Object.keys(algorithm.pseudocode).forEach((key) => {
       dispatch(GlobalActions.COLLAPSE, { codeblockname: key, expandOrCollapase: true });
     });
   };
 
   const onCollapse = () => {
+
+    reset()
+
     Object.keys(algorithm.pseudocode).forEach((key) => {
       if (key !== 'Main') {
         dispatch(GlobalActions.COLLAPSE, { codeblockname: key, expandOrCollapase: false });
