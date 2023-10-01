@@ -22,6 +22,11 @@ function defer(f, v) {
 
 export default class {
   constructor(initfn) {
+    // Chunks are how the algorithm is broken down into steps
+    // and how the visualizers are updated in sync with the pseudocode.
+    // Pseudocode is broken down into bookmarks with the \\B notation.
+    // Passed into each chunk is a mutator function that changes the
+    // state of the visualizers.
     this.chunks = [];
     this.visualisers = {};
     this.init = initfn;
@@ -61,8 +66,8 @@ export default class {
   doChunk(index) {
     this.chunks[index].mutator(
       Object.fromEntries(
-        Object.entries(this.visualisers).map(([k, v]) => [k, v.instance])
-      )
+        Object.entries(this.visualisers).map(([k, v]) => [k, v.instance]),
+      ),
     );
   }
 

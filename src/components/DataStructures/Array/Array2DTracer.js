@@ -42,7 +42,7 @@ class Array2DTracer extends Tracer {
    */
   set(array2d = [], algo) {
     this.data = array2d.map((array1d) =>
-      [...array1d].map((value, i) => new Element(value, i))
+      [...array1d].map((value, i) => new Element(value, i)),
     );
     this.algo = algo;
     this.kth = '1';
@@ -109,7 +109,7 @@ class Array2DTracer extends Tracer {
     }
   }
 
-  assignVariable(v, row, idx) {
+  assignGlobalVariable(v, row, idx) {
     // deep clone data so that changes to this.data are all made at the same time which will allow for tweening
     // eslint-disable-next-line consistent-return
     function customizer(val) {
@@ -127,7 +127,7 @@ class Array2DTracer extends Tracer {
     // remove all current occurences of the variable
     for (let y = 0; y < newData[row].length; y++) {
       newData[row][y].variables = newData[row][y].variables.filter(
-        (val) => val !== v
+        (val) => val !== v,
       );
     }
 

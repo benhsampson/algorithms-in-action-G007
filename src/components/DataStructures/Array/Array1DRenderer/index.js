@@ -140,8 +140,8 @@ class Array1DRenderer extends Array2DRenderer {
             {longestRow.map((_, i) => {
               // if the graph instance is heapsort, then the array index starts from 1
 
-                i += 1;
-              
+              i += 1;
+
               return (
                 <div className={classes(styles.col, styles.index)} key={i}>
                   <span className={styles.value}>{i}</span>
@@ -192,8 +192,13 @@ class Array1DRenderer extends Array2DRenderer {
         </div>
         <div>
           {stack && stack.length > 0 ? (
-            this.maxStackDepth = Math.max(this.maxStackDepth, stackDepth),
-            stackRenderer(stack, data[0].length, stackDepth, this.maxStackDepth)
+            ((this.maxStackDepth = Math.max(this.maxStackDepth, stackDepth)),
+            stackRenderer(
+              stack,
+              data[0].length,
+              stackDepth,
+              this.maxStackDepth,
+            ))
           ) : (
             <div />
           )}
@@ -208,13 +213,13 @@ class Array1DRenderer extends Array2DRenderer {
  * @returns string
  */
 
- function stackFrameColour(color_index) {
-	return [
-		'var(--not-started-section)', // 0
-		'var(--in-progress-section)', // 1
-		'var(--current-section)',     // 2
-		'var(--finished-section)',    // 3
-	][color_index]
+function stackFrameColour(color_index) {
+  return [
+    'var(--not-started-section)', // 0
+    'var(--in-progress-section)', // 1
+    'var(--current-section)', // 2
+    'var(--finished-section)', // 3
+  ][color_index];
 }
 
 /**
@@ -225,7 +230,7 @@ class Array1DRenderer extends Array2DRenderer {
  * @param {*} stackDepth
  * @returns
  */
-function stackRenderer(stack, nodeCount, stackDepth, maxStackDepth) { 
+function stackRenderer(stack, nodeCount, stackDepth, maxStackDepth) {
   if (!stack) {
     return <div />;
   }
@@ -251,13 +256,12 @@ function stackRenderer(stack, nodeCount, stackDepth, maxStackDepth) {
                   2. Uncomment the `displayStackNumber` function in this file.
                 */}
 
-            {/* {(() => {
+            {(() => {
               if (displayStackNumber(val, index, stack[i])) {
                 return <p style={{ fontSize: '13px' }}>{index}</p>;
               }
-              return '';
-            })()} */}
-
+              return '_';
+            })()}
           </div>
         ))}
       </div>,
@@ -265,12 +269,22 @@ function stackRenderer(stack, nodeCount, stackDepth, maxStackDepth) {
   }
   return (
     <div className={styles.stack}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+        }}
+      >
         <p>
-          {stack.length > 0 && stackDepth !== undefined ? `Current stack depth: ${stackDepth}` : ''}
+          {stack.length > 0 && stackDepth !== undefined
+            ? `Current stack depth: ${stackDepth}`
+            : ''}
         </p>
         <p>
-          {stack.length > 0 && stackDepth !== undefined ? `Maximum stack depth: ${maxStackDepth}` : ''}
+          {stack.length > 0 && stackDepth !== undefined
+            ? `Maximum stack depth: ${maxStackDepth}`
+            : ''}
         </p>
       </div>
       {stackItems}
@@ -290,17 +304,17 @@ function stackRenderer(stack, nodeCount, stackDepth, maxStackDepth) {
  * @param {*} arr
  * @returns
  */
-// function displayStackNumber(val, index, arr) {
-//   if (val === 0) {
-//     return false;
-//   }
-//   if (val === 1 && (arr[index - 1] !== 1 || arr[index + 1] !== 1)) {
-//     return true;
-//   }
-//   if (val === -1 && (arr[index - 1] !== -1 || arr[index + 1] !== -1)) {
-//     return true;
-//   }
-//   return false;
-// }
+function displayStackNumber(val, index, arr) {
+  if (val === 0) {
+    return false;
+  }
+  if (val === 1 && (arr[index - 1] !== 1 || arr[index + 1] !== 1)) {
+    return true;
+  }
+  if (val === -1 && (arr[index - 1] !== -1 || arr[index + 1] !== -1)) {
+    return true;
+  }
+  return false;
+}
 
 export default Array1DRenderer;

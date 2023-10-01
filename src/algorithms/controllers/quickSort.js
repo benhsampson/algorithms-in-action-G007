@@ -1,3 +1,6 @@
+/* eslint-disable camelcase */
+/* eslint-disable no-unused-expressions */
+
 import { QSExp } from '../explanations';
 // import 1D tracer to generate array in a separate component of the middle panel
 import ArrayTracer from '../../components/DataStructures/Array/Array1DTracer';
@@ -14,6 +17,7 @@ const VIS_VARIABLE_STRINGS = {
   i_left_index: 'i',
   j_right_index: 'j',
   pivot: 'pivot',
+  depth: 'depth',
 };
 
 // see stackFrameColour in index.js to find corresponding function mapping to css
@@ -22,6 +26,8 @@ const STACK_FRAME_COLOR = {
   In_progress: 1,
   Current: 2,
   Finished: 3,
+  I_index: 4,
+  J_index: 5,
 };
 
 // bookmarks (id) into the REAL file for quicksort
@@ -47,6 +53,12 @@ const QS_BOOKMARKS = {
   // 17
   done_qs_left: 18,
   done_qs_right: 19,
+};
+
+// Map {variable in VIS_VARIABLE_STRINGS} to {color in STACK_FRAME_COLOR}
+const VAR2COLOR = {
+  [VIS_VARIABLE_STRINGS.i_left_index]: STACK_FRAME_COLOR.I_index,
+  [VIS_VARIABLE_STRINGS.j_right_index]: STACK_FRAME_COLOR.J_index,
 };
 
 // ----------------------------------------------------------------------------------------------------------------------------
@@ -122,6 +134,10 @@ export default {
     // Define 'global' variables
     // ----------------------------------------------------------------------------------------------------------------------------
 
+    // The current partition of the array.
+    // let current_partition = [];
+    // let current_depth_index = 0;
+
     const entire_num_array = nodes;
     let max_depth_index = -1;
     const finished_stack_frames = []; // [ [left, right,  depth], ...]  (although depth could be implicit this is easier)
@@ -141,36 +157,89 @@ export default {
         );
       }
 
-      Cur_finished_stack_frames.forEach((stack_frame) => {
-        stack = update_vis_with_stack_frame(
-          stack,
-          stack_frame,
-          STACK_FRAME_COLOR.Finished,
-        );
-      });
+      // Cur_finished_stack_frames.forEach((stack_frame) => {
+      //   stack = update_vis_with_stack_frame(
+      //     stack,
+      //     stack_frame,
+      //     STACK_FRAME_COLOR.Finished,
+      //   );
+      // });
 
-      Cur_real_stack.forEach((stack_frame) => {
-        stack = update_vis_with_stack_frame(
-          stack,
-          stack_frame,
-          STACK_FRAME_COLOR.In_progress,
-        );
-      });
+      // Cur_real_stack.forEach((stack_frame) => {
+      //   stack = update_vis_with_stack_frame(
+      //     stack,
+      //     stack_frame,
+      //     STACK_FRAME_COLOR.In_progress,
+      //   );
+      // });
 
-      if (Cur_real_stack.length !== 0) {
-        stack = update_vis_with_stack_frame(
-          stack,
-          Cur_real_stack[Cur_real_stack.length - 1],
-          STACK_FRAME_COLOR.Current,
-        );
-      }
+      // if (Cur_real_stack.length !== 0) {
+      //   stack = update_vis_with_stack_frame(
+      //     stack,
+      //     Cur_real_stack[Cur_real_stack.length - 1],
+      //     STACK_FRAME_COLOR.Current,
+      //   );
+      // }
 
       return stack;
     }
 
+    const update_stack_viz_with_current_stack_partition = (
+      current_partition, // [left, right]
+      current_depth, // depth index
+    ) => {
+      console.log(current_depth, current_partition);
+      let stack = derive_stack(real_stack, finished_stack_frames);
+      console.assert(current_depth >= 0);
+      console.log(current_depth);
+      const current_frame = [...current_partition, current_depth];
+      stack = update_vis_with_stack_frame(
+        stack,
+        current_frame,
+        STACK_FRAME_COLOR.Current,
+      );
+      return stack;
+    };
+
     const refresh_stack = (vis, Cur_real_stack, Cur_finished_stack_frames) => {
       vis.array.setStackDepth(Cur_real_stack.length);
-      vis.array.setStack(derive_stack(Cur_real_stack, Cur_finished_stack_frames));
+      vis.array.setStack(
+        // FIXME:
+        derive_stack(Cur_real_stack, Cur_finished_stack_frames),
+      );
+    };
+
+    /**
+     *
+     * @param {*} cur_real_stack The current real stack.
+     * @param {*} cur_finished_stack_frames The current finished real stack.
+     * @param {*} index The new index.
+     * @param {*} variable The variable in VIS_VARIABLE_STRINGS.
+     */
+    const update_stack_indices = (
+      cur_real_stack,
+      cur_finished_stack_frames,
+      index,
+      variable,
+    ) => {
+      console.log(cur_real_stack, cur_finished_stack_frames);
+      // Derive the stack
+      const stack = derive_stack(cur_real_stack, cur_finished_stack_frames);
+      if (cur_real_stack.length > 0) {
+        // Get the in-progress stack frame
+        const in_progress = stack[stack.length - 1];
+        // The variable can only have one occurrence in the current stack frame, so if it already exists remove it.
+        const existing_index = in_progress.indexOf(VAR2COLOR[variable]);
+        if (existing_index !== -1) {
+          in_progress[existing_index] = STACK_FRAME_COLOR.In_progress;
+        }
+        // Set the new index in the visualization stack
+        in_progress[index] = VAR2COLOR[variable];
+        console.log(in_progress);
+        // Return the new stack
+        stack[stack.length - 1] = in_progress;
+      }
+      return stack;
     };
 
     ///
@@ -192,7 +261,7 @@ export default {
     // Define quicksort functions
     // ----------------------------------------------------------------------------------------------------------------------------
 
-    function partition(partition_num_array, left, right) {
+    function partition(partition_num_array, left, right, depth) {
       const a = partition_num_array;
       let i = left - 1;
       let j = right;
@@ -204,11 +273,15 @@ export default {
         QS_BOOKMARKS.set_pivot_to_value_at_array_indx_right, 
         noOp
       ); // prevent early highlight
-      */
+     */
 
       chunker.add(
         QS_BOOKMARKS.set_pivot_to_value_at_array_indx_right,
         (vis, p) => {
+          vis.array.addGlobalVariable(VIS_VARIABLE_STRINGS.depth, depth);
+          vis.array.setStack(
+            update_stack_viz_with_current_stack_partition([left, right], depth),
+          );
           highlight(vis, p);
           vis.array.assignVariable(VIS_VARIABLE_STRINGS.pivot, p);
         },
@@ -223,12 +296,34 @@ export default {
         (vis, i1) => {
           if (i1 >= 0) {
             highlight(vis, i1, false);
-            isPartitionExpanded() &&
+            if (isPartitionExpanded()) {
               vis.array.assignVariable(VIS_VARIABLE_STRINGS.i_left_index, i1);
+              // FIXME:
+              vis.array.setStackDepth(real_stack.length);
+              // vis.array.setStack(
+              //   update_stack_indices(
+              //     real_stack,
+              //     finished_stack_frames,
+              //     i1,
+              //     VIS_VARIABLE_STRINGS.i_left_index,
+              //   ),
+              // );
+            }
           } else if (i1 === -1) {
-            isPartitionExpanded() && highlight(vis, 0, false);
-            isPartitionExpanded() &&
+            if (isPartitionExpanded()) {
+              highlight(vis, 0, false);
               vis.array.assignVariable(VIS_VARIABLE_STRINGS.i_left_index, 0);
+              // FIXME:
+              vis.array.setStackDepth(real_stack.length);
+              // vis.array.setStack(
+              //   update_stack_indices(
+              //     real_stack,
+              //     finished_stack_frames,
+              //     0,
+              //     VIS_VARIABLE_STRINGS.i_left_index,
+              //   ),
+              // );
+            }
           }
         },
         [i],
@@ -307,9 +402,20 @@ export default {
 
       chunker.add(
         QS_BOOKMARKS.swap_pivot_into_correct_position,
-        (vis, i1, j1, r) => {
-          isPartitionExpanded() &&
+        (vis, i1, j1, r, current_depth) => {
+          if (isPartitionExpanded()) {
+            vis.array.assignGlobalVariable(
+              VIS_VARIABLE_STRINGS.depth,
+              current_depth,
+            );
+            vis.array.setStack(
+              update_stack_viz_with_current_stack_partition(
+                [i, j],
+                current_depth,
+              ),
+            );
             vis.array.assignVariable(VIS_VARIABLE_STRINGS.pivot, i);
+          }
           unhighlight(vis, i1);
           if (j1 >= 0) {
             if (j1 === i1) {
@@ -321,7 +427,7 @@ export default {
           unhighlight(vis, r, false);
           vis.array.sorted(i1);
         },
-        [i, j, right],
+        [i, j, right, depth],
       );
       return [i, a]; // Return [pivot location, array partition_num_array]
     }
@@ -332,7 +438,10 @@ export default {
 
       let a = qs_num_array;
       let pivot;
-      if (depth < 1 || (isQuicksortFirstHalfExpanded() && isQuicksortSecondHalfExpanded())) {
+      if (
+        depth < 1 ||
+        (isQuicksortFirstHalfExpanded() && isQuicksortSecondHalfExpanded())
+      ) {
         chunker.add(QS_BOOKMARKS.if_left_less_right, refresh_stack, [
           real_stack,
           finished_stack_frames,
@@ -340,12 +449,12 @@ export default {
       }
 
       if (left < right) {
-        [pivot, a] = partition(a, left, right);
-          
+        [pivot, a] = partition(a, left, right, depth);
+
         if (depth < 1 || isQuicksortFirstHalfExpanded()) {
           chunker.add(QS_BOOKMARKS.quicksort_left_to_i_minus_1, refresh_stack, [
-          real_stack,
-          finished_stack_frames,
+            real_stack,
+            finished_stack_frames,
           ]);
         } else {
           chunker.add(QS_BOOKMARKS.quicksort_left_to_i_minus_1);
@@ -354,8 +463,8 @@ export default {
 
         if (depth < 1 || isQuicksortSecondHalfExpanded()) {
           chunker.add(QS_BOOKMARKS.quicksort_i_plus_1_to_right, refresh_stack, [
-          real_stack,
-          finished_stack_frames,
+            real_stack,
+            finished_stack_frames,
           ]);
         } else {
           chunker.add(QS_BOOKMARKS.quicksort_left_to_i_minus_1);
@@ -365,7 +474,10 @@ export default {
       // array of size 1, already sorted
       else if (left < a.length) {
         let size_one_bookmark = QS_BOOKMARKS.if_left_less_right;
-        if (!isQuicksortFirstHalfExpanded() && !isQuicksortSecondHalfExpanded()) {
+        if (
+          !isQuicksortFirstHalfExpanded() &&
+          !isQuicksortSecondHalfExpanded()
+        ) {
           size_one_bookmark = QS_BOOKMARKS.quicksort_left_to_i_minus_1;
         } else if (!isQuicksortSecondHalfExpanded()) {
           size_one_bookmark = QS_BOOKMARKS.quicksort_i_plus_1_to_right;
@@ -417,7 +529,10 @@ export default {
           vis.array.fadeIn(i);
         }
         vis.array.clearVariables();
-        vis.array.setStack(derive_stack(real_stack, finished_stack_frames));
+        vis.array.setStack(
+          // FIXME:
+          derive_stack(real_stack, finished_stack_frames),
+        );
       },
       [entire_num_array.length - 1],
     );

@@ -13,6 +13,7 @@ class Array1DTracer extends Array2DTracer {
 
   init() {
     super.init();
+    this.variables = {};
     this.chartTracer = null;
   }
 
@@ -135,6 +136,16 @@ class Array1DTracer extends Array2DTracer {
 
   stringTheContent() {
     return this.data;
+  }
+
+  // Add a general variable, this is not tied to any specific element in the array.
+  // Useful for things such as the depth in quicksort.
+  addGlobalVariable(key, value) {
+    this.variables[key] = value;
+  }
+
+  assignGlobalVariable(key, value) {
+    this.variables[key] = value;
   }
 }
 
